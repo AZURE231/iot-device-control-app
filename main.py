@@ -2,6 +2,8 @@ import sys
 import random
 import time
 from Adafruit_IO import MQTTClient
+from simpleAI import *
+import cv2
 
 
 AIO_FEED_IDs = "button1"
@@ -30,6 +32,8 @@ client.on_subscribe = subscribe
 client.connect()
 client.loop_background()
 counter = 10
+counter_ai = 5
+previous_result = ""
 while True: 
     counter = counter - 1
     if counter <= 0:
@@ -38,4 +42,18 @@ while True:
         client.publish("sensor2", random.randint(50, 70))
         client.publish("sensor3", random.randint(100, 500))
 
+    counter_ai = counter_ai - 1
+    if counter_ai <= 0:
+        counter_ai = 5
+        class_name = image_detector()
+        previous_result = class_name
+        if previous_result != class_name:
+            print(class_name)
+            client.publish("ai", class_name)
     time.sleep(1)
+
+    keyboard_input = cv2.waitKey(1)
+    if keyboard_input == 27:
+        exit()
+        break
+    
