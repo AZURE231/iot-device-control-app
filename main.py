@@ -4,9 +4,10 @@ import time
 from Adafruit_IO import MQTTClient
 from simpleAI import *
 import cv2
+from uart import *
 
 
-AIO_FEED_IDs = "button1"
+AIO_FEED_IDs = ["button1", "button2"]
 AIO_USERNAME = "tuanhuynh231"
 AIO_KEY = "aio_eMOZ03y2hVZLHvNGdvCM0pb4t49c"
 
@@ -35,21 +36,24 @@ counter = 10
 counter_ai = 5
 previous_result = ""
 while True: 
-    counter = counter - 1
-    if counter <= 0:
-        counter = 10
-        client.publish("sensor1", random.randint(10, 20))
-        client.publish("sensor2", random.randint(50, 70))
-        client.publish("sensor3", random.randint(100, 500))
+    # counter = counter - 1
+    # if counter <= 0:
+    #     counter = 10
+    #     client.publish("sensor1", random.randint(10, 20))
+    #     client.publish("sensor2", random.randint(50, 70))
+    #     client.publish("sensor3", random.randint(100, 500))
 
-    counter_ai = counter_ai - 1
-    if counter_ai <= 0:
-        counter_ai = 5
-        class_name = image_detector()
-        previous_result = class_name
-        if previous_result != class_name:
-            print(class_name)
-            client.publish("ai", class_name)
+    
+
+    # counter_ai = counter_ai - 1
+    # if counter_ai <= 0:
+    #     counter_ai = 5
+    #     class_name = image_detector()
+    #     previous_result = class_name
+    #     if previous_result != class_name:
+    #         print(class_name)
+    #         client.publish("ai", class_name)
+    readSerial(client)
     time.sleep(1)
 
     keyboard_input = cv2.waitKey(1)
