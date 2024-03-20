@@ -1000,6 +1000,10 @@ MonoBehaviour:
   testPublishButton: {fileID: 0}
   clearButton: {fileID: 0}
   objText: {fileID: 1022656660}
+  temperatureText: {fileID: 1493237207}
+  lightText: {fileID: 1905934499}
+  lightButton: {fileID: 1539078389}
+  pumpButton: {fileID: 1598488257}
 --- !u!114 &1340262202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1405,6 +1409,7 @@ GameObject:
   - component: {fileID: 1539078388}
   - component: {fileID: 1539078387}
   - component: {fileID: 1539078386}
+  - component: {fileID: 1539078389}
   m_Layer: 5
   m_Name: LampControl
   m_TagString: Untagged
@@ -1429,7 +1434,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -318.32, y: -34.831}
+  m_AnchoredPosition: {x: -357, y: -34.831}
   m_SizeDelta: {x: 100.03, y: 69.6621}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1539078386
@@ -1478,7 +1483,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1340262201}
         m_TargetAssemblyTypeName: MqttHelper, Assembly-CSharp
-        m_MethodName: TestPublish
+        m_MethodName: LightButtonPublish
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1526,6 +1531,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1539078384}
   m_CullTransparentMesh: 1
+--- !u!114 &1539078389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1539078384}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa4610b999574cd5869ff049906fa2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  state: 0
+  onSprite: {fileID: 21300000, guid: e47eb9998e3934afa8989c108e8a065e, type: 3}
+  offSprite: {fileID: 21300000, guid: 6c92db0bca3de4bc898e57bb46598aa2, type: 3}
+  button: {fileID: 1539078386}
 --- !u!1 &1598488252
 GameObject:
   m_ObjectHideFlags: 0
@@ -1538,6 +1559,7 @@ GameObject:
   - component: {fileID: 1598488256}
   - component: {fileID: 1598488255}
   - component: {fileID: 1598488254}
+  - component: {fileID: 1598488257}
   m_Layer: 5
   m_Name: PumpControl
   m_TagString: Untagged
@@ -1611,7 +1633,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1340262201}
         m_TargetAssemblyTypeName: MqttHelper, Assembly-CSharp
-        m_MethodName: TestPublish
+        m_MethodName: PumpButtonPublish
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1659,6 +1681,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1598488252}
   m_CullTransparentMesh: 1
+--- !u!114 &1598488257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1598488252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa4610b999574cd5869ff049906fa2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  state: 0
+  onSprite: {fileID: 21300000, guid: e47eb9998e3934afa8989c108e8a065e, type: 3}
+  offSprite: {fileID: 21300000, guid: 6c92db0bca3de4bc898e57bb46598aa2, type: 3}
+  button: {fileID: 1598488254}
 --- !u!1 &1881495228
 GameObject:
   m_ObjectHideFlags: 0

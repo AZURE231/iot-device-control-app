@@ -58,7 +58,7 @@ namespace M2MqttUnity
         public string mqttUserName = null;
         [Tooltip("Password for the MQTT broker. Keep blank if no password is required.")]
         public string mqttPassword = null;
-        
+
         /// <summary>
         /// Wrapped MQTT client
         /// </summary>
@@ -118,6 +118,7 @@ namespace M2MqttUnity
             Debug.LogFormat("Connected to {0}:{1}...\n", brokerAddress, brokerPort.ToString());
 
             SubscribeTopics();
+            Debug.Log("Running on base");
 
             if (ConnectionSucceeded != null)
             {

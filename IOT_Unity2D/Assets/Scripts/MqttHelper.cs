@@ -23,7 +23,13 @@ public class MqttHelper : M2MqttUnityClient
     private List<string> eventMessages = new List<string>();
     private bool updateUI = false;
 
+    [Header("Real User Interface")]
     public TextMeshProUGUI objText;
+    public TextMeshProUGUI temperatureText;
+    public TextMeshProUGUI lightText;
+    public ButtonControl lightButton;
+    public ButtonControl pumpButton;
+
 
     public void TestPublish()
     {
@@ -32,6 +38,30 @@ public class MqttHelper : M2MqttUnityClient
 
         Debug.Log("Test message published");
         AddUiMessage("Test message published.");
+    }
+
+    public void LightButtonPublish()
+    {
+
+        if (lightButton.state)
+        {
+            client.Publish("tuanhuynh231/feeds/button1", System.Text.Encoding.UTF8.GetBytes("1"),
+            MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            lightButton.ButtonOn();
+        }
+        else
+        {
+            client.Publish("tuanhuynh231/feeds/button1", System.Text.Encoding.UTF8.GetBytes("0"),
+            MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            lightButton.ButtonOff();
+        }
+        lightButton.state = !lightButton.state;
+    }
+
+    public void PumpButtonPublish()
+    {
+        client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes(pumpButton.state.ToString()),
+            MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
     }
 
     public void SetBrokerAddress(string brokerAddress)
@@ -93,7 +123,10 @@ public class MqttHelper : M2MqttUnityClient
 
     protected override void SubscribeTopics()
     {
-        client.Subscribe(new string[] { "tuanhuynh231/feeds/button1" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+        client.Subscribe(new string[] { "tuanhuynh231/feeds/button1", "tuanhuynh231/feeds/button2",
+            "tuanhuynh231/feeds/sensor1", "tuanhuynh231/feeds/sensor2"
+        }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE,
+            MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE , MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
     }
 
     protected override void UnsubscribeTopics()
@@ -175,9 +208,30 @@ public class MqttHelper : M2MqttUnityClient
     protected override void DecodeMessage(string topic, byte[] message)
     {
         string msg = System.Text.Encoding.UTF8.GetString(message);
-        Debug.Log("***Received: " + msg);
+        Debug.Log("***Received: " + msg + " on topic: " + topic);
         objText.SetText(msg);
         StoreMessage(msg);
+
+        if (topic == "tuanhuynh231/feeds/sensor1")
+        {
+            temperatureText.SetText(msg);
+        }
+        if (topic == "tuanhuynh231/feeds/sensor2")
+        {
+            lightText.SetText(msg);
+        }
+        if (topic == "tuanhuynh231/feeds/button1")
+        {
+            if (msg == "1")
+            {
+                lightButton.ButtonOn();
+            }
+            if (msg == "0")
+            {
+                lightButton.ButtonOff();
+            }
+        }
+
         if (topic == "M2MQTT_Unity/test")
         {
             if (autoTest)
