@@ -60,8 +60,19 @@ public class MqttHelper : M2MqttUnityClient
 
     public void PumpButtonPublish()
     {
-        client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes(pumpButton.state.ToString()),
+        if (pumpButton.state)
+        {
+            client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes("1"),
             MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            pumpButton.ButtonOn();
+        }
+        else
+        {
+            client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes("0"),
+            MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
+            pumpButton.ButtonOff();
+        }
+        pumpButton.state = !pumpButton.state;
     }
 
     public void SetBrokerAddress(string brokerAddress)
