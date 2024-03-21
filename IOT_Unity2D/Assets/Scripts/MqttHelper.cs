@@ -167,8 +167,6 @@ public class MqttHelper : M2MqttUnityClient
             if (connectButton != null)
             {
                 connectButton.interactable = true;
-                disconnectButton.interactable = false;
-                testPublishButton.interactable = false;
             }
         }
         else
@@ -240,6 +238,17 @@ public class MqttHelper : M2MqttUnityClient
             if (msg == "0")
             {
                 lightButton.ButtonOff();
+            }
+        }
+        if (topic == "tuanhuynh231/feeds/button2")
+        {
+            if (msg == "1")
+            {
+                pumpButton.ButtonOn();
+            }
+            if (msg == "0")
+            {
+                pumpButton.ButtonOff();
             }
         }
 
