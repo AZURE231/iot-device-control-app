@@ -83,6 +83,28 @@ namespace M2MqttUnity
         /// <summary>
         /// Connect to the broker using current settings.
         /// </summary>
+        ///
+
+        public void setAddress(string s)
+        {
+            this.brokerAddress = s;
+        }
+
+        public void setPort(int s)
+        {
+            this.brokerPort = s;
+        }
+
+        public void setUsername(string s)
+        {
+            this.mqttUserName = s;
+        }
+
+        public void setPassword(string s)
+        {
+            this.mqttPassword = s;
+        }
+
         public virtual void Connect()
         {
             if (client == null || !client.IsConnected)

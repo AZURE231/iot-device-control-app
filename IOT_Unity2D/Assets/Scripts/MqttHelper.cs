@@ -10,18 +10,8 @@ public class MqttHelper : M2MqttUnityClient
 {
     [Tooltip("Set this to true to perform a testing cycle automatically on startup")]
     public bool autoTest = false;
-    [Header("User Interface")]
-    public InputField consoleInputField;
-    public Toggle encryptedToggle;
-    public InputField addressInputField;
-    public InputField portInputField;
-    public Button connectButton;
-    public Button disconnectButton;
-    public Button testPublishButton;
-    public Button clearButton;
 
     private List<string> eventMessages = new List<string>();
-    private bool updateUI = false;
 
     [Header("Real User Interface")]
     public TextMeshProUGUI objText;
@@ -29,7 +19,90 @@ public class MqttHelper : M2MqttUnityClient
     public TextMeshProUGUI lightText;
     public ButtonControl lightButton;
     public ButtonControl pumpButton;
+    public CanvasControl canvasControl;
+    public string message;
 
+    [Header("Canvas control")]
+    public CanvasControl canvas;
+    public ReadInput readInput;
+
+    [Header("Feeds")]
+    public string sensor1;
+    public string sensor2;
+    public string button1;
+    public string button2;
+
+    bool Validate()
+    {
+        if (readInput.getAddress() == "")
+        {
+            this.message = "Address can not be empty./n";
+            return false;
+        }
+        if (readInput.getPort() == 0)
+        {
+            this.message = "Port can not be empty./n";
+            return false;
+        }
+        if (readInput.getUsername() == "")
+        {
+            this.message = "Username can not be empty./n";
+            return false;
+        }
+        if (readInput.getPassword() == "")
+        {
+            this.message = "Password can not be empty./n";
+            return false;
+        }
+        return true;
+    }
+
+    public bool setProperty()
+    {
+        if (!Validate())
+        {
+            canvas.SetMessagePannel(true, this.message);
+            return false;
+        }
+        this.setAddress(readInput.getAddress());
+        this.setPort(readInput.getPort());
+        this.setUsername(readInput.getUsername());
+        this.setPassword(readInput.getPassword());
+
+        this.sensor1 = readInput.getSensor1Input();
+        this.sensor2 = readInput.getSensor2Input();
+        this.button1 = readInput.getButton1Input();
+        this.button2 = readInput.getButton2Input();
+        return true;
+    }
+
+    public override void Connect()
+    {
+        if (!setProperty()) return;
+        printProperty();
+
+        StartCoroutine(LoadingConnect());
+    }
+
+    IEnumerator LoadingConnect()
+    {
+        canvas.SwiftUpEnter();
+        base.Connect();
+        yield return new WaitForSeconds(1);
+        canvas.SwiftUpOut();
+    }
+
+    protected override void OnConnected()
+    {
+        base.OnConnected();
+        canvas.StartButtonClicked();
+    }
+
+
+    public void printProperty()
+    {
+        Debug.Log(this.brokerAddress);
+    }
 
     public void TestPublish()
     {
@@ -37,7 +110,6 @@ public class MqttHelper : M2MqttUnityClient
         client.Publish("tuanhuynh231/feeds/ai", System.Text.Encoding.UTF8.GetBytes("Test message"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
 
         Debug.Log("Test message published");
-        AddUiMessage("Test message published.");
     }
 
     public void LightButtonPublish()
@@ -75,62 +147,6 @@ public class MqttHelper : M2MqttUnityClient
         pumpButton.state = !pumpButton.state;
     }
 
-    public void SetBrokerAddress(string brokerAddress)
-    {
-        if (addressInputField && !updateUI)
-        {
-            this.brokerAddress = brokerAddress;
-        }
-    }
-
-    public void SetBrokerPort(string brokerPort)
-    {
-        if (portInputField && !updateUI)
-        {
-            int.TryParse(brokerPort, out this.brokerPort);
-        }
-    }
-
-    public void SetEncrypted(bool isEncrypted)
-    {
-        this.isEncrypted = isEncrypted;
-    }
-
-
-    public void SetUiMessage(string msg)
-    {
-        if (consoleInputField != null)
-        {
-            consoleInputField.text = msg;
-            updateUI = true;
-        }
-    }
-
-    public void AddUiMessage(string msg)
-    {
-        if (consoleInputField != null)
-        {
-            consoleInputField.text += msg + "\n";
-            updateUI = true;
-        }
-    }
-
-    protected override void OnConnecting()
-    {
-        base.OnConnecting();
-        SetUiMessage("Connecting to broker on " + brokerAddress + ":" + brokerPort.ToString() + "...\n");
-    }
-
-    protected override void OnConnected()
-    {
-        base.OnConnected();
-        SetUiMessage("Connected to broker on " + brokerAddress + "\n");
-
-        if (autoTest)
-        {
-            TestPublish();
-        }
-    }
 
     protected override void SubscribeTopics()
     {
@@ -143,74 +159,6 @@ public class MqttHelper : M2MqttUnityClient
     protected override void UnsubscribeTopics()
     {
         client.Unsubscribe(new string[] { "M2MQTT_Unity/test" });
-    }
-
-    protected override void OnConnectionFailed(string errorMessage)
-    {
-        AddUiMessage("CONNECTION FAILED! " + errorMessage);
-    }
-
-    protected override void OnDisconnected()
-    {
-        AddUiMessage("Disconnected.");
-    }
-
-    protected override void OnConnectionLost()
-    {
-        AddUiMessage("CONNECTION LOST!");
-    }
-
-    private void UpdateUI()
-    {
-        if (client == null)
-        {
-            if (connectButton != null)
-            {
-                connectButton.interactable = true;
-            }
-        }
-        else
-        {
-            if (testPublishButton != null)
-            {
-                testPublishButton.interactable = client.IsConnected;
-            }
-            if (disconnectButton != null)
-            {
-                disconnectButton.interactable = client.IsConnected;
-            }
-            if (connectButton != null)
-            {
-                connectButton.interactable = !client.IsConnected;
-            }
-        }
-        if (addressInputField != null && connectButton != null)
-        {
-            addressInputField.interactable = connectButton.interactable;
-            addressInputField.text = brokerAddress;
-        }
-        if (portInputField != null && connectButton != null)
-        {
-            portInputField.interactable = connectButton.interactable;
-            portInputField.text = brokerPort.ToString();
-        }
-        if (encryptedToggle != null && connectButton != null)
-        {
-            encryptedToggle.interactable = connectButton.interactable;
-            encryptedToggle.isOn = isEncrypted;
-        }
-        if (clearButton != null && connectButton != null)
-        {
-            clearButton.interactable = connectButton.interactable;
-        }
-        updateUI = false;
-    }
-
-    protected override void Start()
-    {
-        SetUiMessage("Ready.");
-        updateUI = true;
-        base.Start();
     }
 
 
@@ -251,15 +199,6 @@ public class MqttHelper : M2MqttUnityClient
                 pumpButton.ButtonOff();
             }
         }
-
-        if (topic == "M2MQTT_Unity/test")
-        {
-            if (autoTest)
-            {
-                autoTest = false;
-                Disconnect();
-            }
-        }
     }
 
     private void StoreMessage(string eventMsg)
@@ -269,7 +208,7 @@ public class MqttHelper : M2MqttUnityClient
 
     private void ProcessMessage(string msg)
     {
-        AddUiMessage("Received: " + msg);
+        Debug.Log("Received: " + msg);
     }
 
     protected override void Update()
@@ -284,15 +223,17 @@ public class MqttHelper : M2MqttUnityClient
             }
             eventMessages.Clear();
         }
-        if (updateUI)
-        {
-            UpdateUI();
-        }
     }
 
     private void OnDestroy()
     {
         Disconnect();
+    }
+
+    protected override void OnConnectionFailed(string errorMessage)
+    {
+        canvas.SetMessagePannel(true, errorMessage);
+        base.OnConnectionFailed(errorMessage);
     }
 
     private void OnValidate()
@@ -302,4 +243,5 @@ public class MqttHelper : M2MqttUnityClient
             autoConnect = true;
         }
     }
+
 }
