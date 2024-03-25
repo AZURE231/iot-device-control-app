@@ -32,55 +32,105 @@ public class MqttHelper : M2MqttUnityClient
     public string button1;
     public string button2;
 
-    bool Validate()
+    bool Validate(string address, int port, string username, string password,
+        string sensor1, string sensor2, string button1, string button2)
     {
-        if (readInput.getAddress() == "")
+        if (address == "")
         {
-            this.message = "Address can not be empty./n";
+            this.message = "Address can not be empty.";
             return false;
         }
-        if (readInput.getPort() == 0)
+        if (port == 0)
         {
-            this.message = "Port can not be empty./n";
+            this.message = "Port can not be empty.";
             return false;
         }
-        if (readInput.getUsername() == "")
+        if (username == "")
         {
-            this.message = "Username can not be empty./n";
+            this.message = "Username can not be empty.";
             return false;
         }
-        if (readInput.getPassword() == "")
+        if (password == "")
         {
-            this.message = "Password can not be empty./n";
+            this.message = "Password can not be empty.";
+            return false;
+        }
+        if (sensor1 == "")
+        {
+            this.message = "Temperature can not be empty.";
+            return false;
+        }
+        if (sensor2 == "")
+        {
+            this.message = "Light can not be empty.";
+            return false;
+        }
+        if (button1 == "")
+        {
+            this.message = "Button can not be empty.";
+            return false;
+        }
+        if (button2 == "")
+        {
+            this.message = "Button can not be empty.";
             return false;
         }
         return true;
     }
 
-    public bool setProperty()
+    bool setProperty(string address, int port, string username, string password,
+        string sensor_1, string sensor_2, string button_1, string button_2)
     {
-        if (!Validate())
-        {
-            canvas.SetMessagePannel(true, this.message);
-            return false;
-        }
-        this.setAddress(readInput.getAddress());
-        this.setPort(readInput.getPort());
-        this.setUsername(readInput.getUsername());
-        this.setPassword(readInput.getPassword());
+        if (!Validate(address, port, username, password, sensor1, sensor2, button1, button2)) return false;
+        this.setAddress(address);
+        this.setPort(port);
+        this.setUsername(username);
+        this.setPassword(password);
 
-        this.sensor1 = readInput.getSensor1Input();
-        this.sensor2 = readInput.getSensor2Input();
-        this.button1 = readInput.getButton1Input();
-        this.button2 = readInput.getButton2Input();
+        this.sensor1 = sensor_1;
+        Debug.Log("set property");
+        Debug.Log(this.sensor1);
+        this.sensor2 = sensor_2;
+        this.button1 = button_1;
+        this.button2 = button_2;
         return true;
+    }
+
+    public void ConnectOnNew()
+    {
+
+        if (!setProperty(readInput.getAddress(), readInput.getPort(),
+            readInput.getUsername(), readInput.getPassword(),
+            readInput.getSensor1Input(), readInput.getSensor2Input(), readInput.getButton1Input(),
+            readInput.getButton2Input()))
+        {
+            canvas.SetMessagePannel(false, this.message);
+            return;
+        };
+        this.Connect();
+    }
+
+    public void ConnectOnStart()
+    {
+        ServerData data = SaveSystem.LoadData();
+        Debug.Log("Run start");
+        if (data == null)
+        {
+            this.message = "No save data found!";
+            canvas.SetMessagePannel(true, this.message);
+            return;
+        }
+        if (!setProperty(data.address, data.port, data.username, data.password, data.sensor1,
+            data.sensor2, data.button1, data.button2))
+        {
+            canvas.SetMessagePannel(false, this.message);
+            return;
+        };
+        this.Connect();
     }
 
     public override void Connect()
     {
-        if (!setProperty()) return;
-        printProperty();
-
         StartCoroutine(LoadingConnect());
     }
 
@@ -95,9 +145,21 @@ public class MqttHelper : M2MqttUnityClient
     protected override void OnConnected()
     {
         base.OnConnected();
+        ServerProps data = new ServerProps(this.brokerAddress, this.brokerPort,
+            this.mqttUserName, this.mqttPassword, this.sensor1, this.sensor2,
+            this.button1, this.button2);
+        SaveSystem.SaveData(data);
+        FetchData();
         canvas.StartButtonClicked();
     }
 
+    void FetchData()
+    {
+        client.Publish(this.mqttUserName + "/feeds/" + this.sensor1 + "/get", null);
+        client.Publish(this.mqttUserName + "/feeds/" + this.sensor2 + "/get", null);
+        client.Publish(this.mqttUserName + "/feeds/" + this.button1 + "/get", null);
+        client.Publish(this.mqttUserName + "/feeds/" + this.button2 + "/get", null);
+    }
 
     public void printProperty()
     {
@@ -147,11 +209,14 @@ public class MqttHelper : M2MqttUnityClient
         pumpButton.state = !pumpButton.state;
     }
 
-
     protected override void SubscribeTopics()
     {
-        client.Subscribe(new string[] { "tuanhuynh231/feeds/button1", "tuanhuynh231/feeds/button2",
-            "tuanhuynh231/feeds/sensor1", "tuanhuynh231/feeds/sensor2"
+        Debug.Log("feed name: ");
+        Debug.Log(this.sensor1);
+        client.Subscribe(new string[] { this.mqttUserName + "/feeds/" + this.sensor1,
+            this.mqttUserName + "/feeds/" + this.sensor2,
+            this.mqttUserName + "/feeds/" + this.button1,
+            this.mqttUserName + "/feeds/" + this.button2
         }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE,
             MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE , MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
     }
@@ -169,15 +234,15 @@ public class MqttHelper : M2MqttUnityClient
         objText.SetText(msg);
         StoreMessage(msg);
 
-        if (topic == "tuanhuynh231/feeds/sensor1")
+        if (topic == this.mqttUserName + "/feeds/" + this.sensor1)
         {
             temperatureText.SetText(msg);
         }
-        if (topic == "tuanhuynh231/feeds/sensor2")
+        if (topic == this.mqttUserName + "/feeds/" + this.sensor2)
         {
             lightText.SetText(msg);
         }
-        if (topic == "tuanhuynh231/feeds/button1")
+        if (topic == this.mqttUserName + "/feeds/" + this.button1)
         {
             if (msg == "1")
             {
@@ -188,7 +253,7 @@ public class MqttHelper : M2MqttUnityClient
                 lightButton.ButtonOff();
             }
         }
-        if (topic == "tuanhuynh231/feeds/button2")
+        if (topic == this.mqttUserName + "/feeds/" + this.button2)
         {
             if (msg == "1")
             {
