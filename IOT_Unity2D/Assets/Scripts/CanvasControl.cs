@@ -74,21 +74,30 @@ public class CanvasControl : MonoBehaviour
 
     public void NextConfigurationButton()
     {
+        //SwiftRightEnter();
+        //SwiftRightOut();
         SetActiveFalseAllPanel();
         feedPanel.SetActive(true);
+
     }
 
     public void BackConfigurationButton()
     {
+        //SwiftRightEnter();
+        //SwiftRightOut();
         SetActiveFalseAllPanel();
         homePanel.SetActive(true);
+
     }
 
     public void BackFeedButton()
     {
         //particle.Play();
+        //SwiftRightEnter();
+        //SwiftRightOut();
         SetActiveFalseAllPanel();
         configurationPanel.SetActive(true);
+
     }
 
     public void SetActiveFalseAllPanel()

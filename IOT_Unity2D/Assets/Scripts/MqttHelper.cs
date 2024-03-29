@@ -143,7 +143,7 @@ public class MqttHelper : M2MqttUnityClient
         yield return new WaitForSeconds(1);
         canvas.SwiftUpOut();
     }
-    public override void Disconnect()
+    public void Signout()
     {
         StartCoroutine(LoadingDisconnect());
     }
