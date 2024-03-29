@@ -79,7 +79,7 @@ public class MqttHelper : M2MqttUnityClient
     }
 
     bool setProperty(string address, int port, string username, string password,
-        string sensor_1, string sensor_2, string button_1, string button_2)
+        string sensor1, string sensor2, string button1, string button2)
     {
         if (!Validate(address, port, username, password, sensor1, sensor2, button1, button2)) return false;
         this.setAddress(address);
@@ -87,12 +87,12 @@ public class MqttHelper : M2MqttUnityClient
         this.setUsername(username);
         this.setPassword(password);
 
-        this.sensor1 = sensor_1;
+        this.sensor1 = sensor1;
         Debug.Log("set property");
         Debug.Log(this.sensor1);
-        this.sensor2 = sensor_2;
-        this.button1 = button_1;
-        this.button2 = button_2;
+        this.sensor2 = sensor2;
+        this.button1 = button1;
+        this.button2 = button2;
         return true;
     }
 
@@ -104,6 +104,8 @@ public class MqttHelper : M2MqttUnityClient
             readInput.getSensor1Input(), readInput.getSensor2Input(), readInput.getButton1Input(),
             readInput.getButton2Input()))
         {
+            Debug.Log("Sensor1: ");
+            Debug.Log(readInput.getSensor1Input());
             canvas.SetMessagePannel(false, this.message);
             return;
         };
@@ -141,6 +143,20 @@ public class MqttHelper : M2MqttUnityClient
         yield return new WaitForSeconds(1);
         canvas.SwiftUpOut();
     }
+    public override void Disconnect()
+    {
+        StartCoroutine(LoadingDisconnect());
+    }
+
+    IEnumerator LoadingDisconnect()
+    {
+        canvas.SwiftUpEnter();
+        base.Disconnect();
+        yield return new WaitForSeconds(1);
+        canvas.SwiftUpOut();
+        canvas.Start();
+    }
+
 
     protected override void OnConnected()
     {
