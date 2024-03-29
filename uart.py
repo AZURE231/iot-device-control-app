@@ -28,8 +28,21 @@ def processData(client, data):
         print("Publishing " + splitData[2] + " to sensor1")
     elif splitData[1] == "H":
         client.publish("sensor2", splitData[2])
-        print("Publishing " + splitData[2] + " to sensor1")
-
+        print("Publishing " + splitData[2] + " to sensor2")
+    elif splitData[1] == "B":
+        if (splitData[2] == "0"):
+            client.publish("button1", "0")
+            print("Publishing 0 to button1")
+        else:
+            client.publish("button1", "1")
+            print("Publishing 1 to button1")
+    elif splitData[1] == "L":
+        if (splitData[2] == "0"):
+            client.publish("button2", "0")
+            print("Publishing 0 to button2")
+        else:
+            client.publish("button2", "1")
+            print("Publishing 1 to button2")
 
 mess = ""
 def readSerial(client):
