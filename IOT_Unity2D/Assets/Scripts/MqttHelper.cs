@@ -32,6 +32,9 @@ public class MqttHelper : M2MqttUnityClient
     public string button1;
     public string button2;
 
+    private bool isReceiveButton1 = false;
+    private bool isReceiveButton2 = false;
+
     bool Validate(string address, int port, string username, string password,
         string sensor1, string sensor2, string button1, string button2)
     {
@@ -169,6 +172,12 @@ public class MqttHelper : M2MqttUnityClient
         canvas.StartButtonClicked();
     }
 
+    protected override void OnConnectionLost()
+    {
+        canvas.SetMessagePannel(false, "Connection Lost");
+        base.OnConnectionLost();
+    }
+
     void FetchData()
     {
         client.Publish(this.mqttUserName + "/feeds/" + this.sensor1 + "/get", null);
@@ -192,37 +201,44 @@ public class MqttHelper : M2MqttUnityClient
 
     public void LightButtonPublish()
     {
-
         if (lightButton.state)
         {
-            client.Publish("tuanhuynh231/feeds/button1", System.Text.Encoding.UTF8.GetBytes("1"),
+            client.Publish(this.mqttUserName + "/feeds/" + this.button1,
+                System.Text.Encoding.UTF8.GetBytes("1"),
             MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            lightButton.ButtonOn();
         }
         else
         {
-            client.Publish("tuanhuynh231/feeds/button1", System.Text.Encoding.UTF8.GetBytes("0"),
+            client.Publish(this.mqttUserName + "/feeds/" + this.button1,
+                System.Text.Encoding.UTF8.GetBytes("0"),
             MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            lightButton.ButtonOff();
         }
-        lightButton.state = !lightButton.state;
+    }
+
+    bool LostConnection()
+    {
+        if (Application.internetReachability == NetworkReachability.NotReachable)
+        {
+            canvas.SetMessagePannel(true, "Connection Lost");
+            return true;
+        }
+        return false;
     }
 
     public void PumpButtonPublish()
     {
         if (pumpButton.state)
         {
-            client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes("1"),
+            client.Publish(this.mqttUserName + "/feeds/" + this.button2,
+                System.Text.Encoding.UTF8.GetBytes("1"),
             MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            pumpButton.ButtonOn();
         }
         else
         {
-            client.Publish("tuanhuynh231/feeds/button2", System.Text.Encoding.UTF8.GetBytes("0"),
+            client.Publish(this.mqttUserName + "/feeds/" + this.button2,
+                System.Text.Encoding.UTF8.GetBytes("0"),
             MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            pumpButton.ButtonOff();
         }
-        pumpButton.state = !pumpButton.state;
     }
 
     protected override void SubscribeTopics()
@@ -263,10 +279,12 @@ public class MqttHelper : M2MqttUnityClient
             if (msg == "1")
             {
                 lightButton.ButtonOn();
+                lightButton.state = false;
             }
             if (msg == "0")
             {
                 lightButton.ButtonOff();
+                lightButton.state = true;
             }
         }
         if (topic == this.mqttUserName + "/feeds/" + this.button2)
@@ -274,10 +292,12 @@ public class MqttHelper : M2MqttUnityClient
             if (msg == "1")
             {
                 pumpButton.ButtonOn();
+                pumpButton.state = false;
             }
             if (msg == "0")
             {
                 pumpButton.ButtonOff();
+                pumpButton.state = true;
             }
         }
     }
@@ -295,6 +315,11 @@ public class MqttHelper : M2MqttUnityClient
     protected override void Update()
     {
         base.Update(); // call ProcessMqttEvents()
+        if (LostConnection())
+        {
+            canvas.SetMessagePannel(true, "Lost connection");
+        }
+
 
         if (eventMessages.Count > 0)
         {
