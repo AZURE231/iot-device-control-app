@@ -38,6 +38,7 @@ public class CanvasControl : MonoBehaviour
     public void CloseErrorPannel()
     {
         messagePannel.SetActive(false);
+        Debug.Log("Close pannel");
     }
 
     public void SwiftRightEnter()

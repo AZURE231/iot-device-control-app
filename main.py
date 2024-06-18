@@ -2,8 +2,8 @@ import sys
 import random
 import time
 from Adafruit_IO import MQTTClient
-# from simpleAI import *
-# import cv2
+from simpleAI import *
+import cv2
 from uart import *
 
 
@@ -45,11 +45,11 @@ client.on_message = message
 client.on_subscribe = subscribe 
 client.connect()
 client.loop_background()
-counter = 10
+counter = 20
 counter_ai = 5
 previous_result = ""
 while True: 
-    # counter = counter - 1
+    counter = counter - 1
     # if counter <= 0:
     #     counter = 10
     #     client.publish("sensor1", random.randint(10, 20))
@@ -58,14 +58,14 @@ while True:
 
     
 
-    # counter_ai = counter_ai - 1
-    # if counter_ai <= 0:
-    #     counter_ai = 5
-    #     class_name = image_detector()
-    #     previous_result = class_name
-    #     if previous_result != class_name:
-    #         print(class_name)
-    #         client.publish("ai", class_name)
+    counter_ai = counter_ai - 1
+    if counter_ai <= 0:
+        counter_ai = 5
+        class_name = image_detector()
+        previous_result = class_name
+        if previous_result != class_name:
+            print(class_name)
+            client.publish("ai", class_name)
     readSerial(client)
     time.sleep(1)
 

@@ -35,6 +35,9 @@ public class MqttHelper : M2MqttUnityClient
     private bool isReceiveButton1 = false;
     private bool isReceiveButton2 = false;
 
+    bool isDisconnect = false;
+    bool isFetchData = false;
+
     bool Validate(string address, int port, string username, string password,
         string sensor1, string sensor2, string button1, string button2)
     {
@@ -109,7 +112,7 @@ public class MqttHelper : M2MqttUnityClient
         {
             Debug.Log("Sensor1: ");
             Debug.Log(readInput.getSensor1Input());
-            canvas.SetMessagePannel(false, this.message);
+            canvas.SetMessagePannel(true, this.message);
             return;
         };
         this.Connect();
@@ -128,7 +131,7 @@ public class MqttHelper : M2MqttUnityClient
         if (!setProperty(data.address, data.port, data.username, data.password, data.sensor1,
             data.sensor2, data.button1, data.button2))
         {
-            canvas.SetMessagePannel(false, this.message);
+            canvas.SetMessagePannel(true, this.message);
             return;
         };
         this.Connect();
@@ -172,12 +175,6 @@ public class MqttHelper : M2MqttUnityClient
         canvas.StartButtonClicked();
     }
 
-    protected override void OnConnectionLost()
-    {
-        canvas.SetMessagePannel(false, "Connection Lost");
-        base.OnConnectionLost();
-    }
-
     void FetchData()
     {
         client.Publish(this.mqttUserName + "/feeds/" + this.sensor1 + "/get", null);
@@ -201,6 +198,11 @@ public class MqttHelper : M2MqttUnityClient
 
     public void LightButtonPublish()
     {
+        if (LostConnection())
+        {
+            canvas.SetMessagePannel(true, "Connection Lost");
+            return;
+        }
         if (lightButton.state)
         {
             client.Publish(this.mqttUserName + "/feeds/" + this.button1,
@@ -227,6 +229,11 @@ public class MqttHelper : M2MqttUnityClient
 
     public void PumpButtonPublish()
     {
+        if (LostConnection())
+        {
+            canvas.SetMessagePannel(true, "Connection Lost");
+            return;
+        }
         if (pumpButton.state)
         {
             client.Publish(this.mqttUserName + "/feeds/" + this.button2,
@@ -314,13 +321,25 @@ public class MqttHelper : M2MqttUnityClient
 
     protected override void Update()
     {
-        base.Update(); // call ProcessMqttEvents()
+
+
         if (LostConnection())
         {
-            canvas.SetMessagePannel(true, "Lost connection");
+            isDisconnect = true;
+        }
+        else
+        {
+            isDisconnect = false;
+            isFetchData = false;
         }
 
+        if (isDisconnect && !isFetchData)
+        {
+            FetchData();
+            isFetchData = false;
+        }
 
+        base.Update(); // call ProcessMqttEvents()
         if (eventMessages.Count > 0)
         {
             foreach (string msg in eventMessages)
